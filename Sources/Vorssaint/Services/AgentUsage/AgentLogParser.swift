@@ -86,6 +86,9 @@ struct AgentLogState: Equatable {
     private(set) var cursorUnmeteredResponses: [String: CursorUnmeteredResponse] = [:]
     /// Derived from the responses; a usual append need not inspect them all for expiry.
     private(set) var cursorEarliestUnmeteredResponse: Date?
+    /// Antigravity named the workspace in the person's message, which
+    /// outranks the folder a command runs in.
+    var namedWorkspace = false
     /// The parent session when a database row belongs to a subagent.
     var parentSession = ""
     /// OpenCode stores all sessions in one database, tracking per-session state.
@@ -295,6 +298,12 @@ enum AgentLogParser {
                let found = resolveHyphenatedPath(base: next, tokens: tokens.dropFirst(length)) { return found }
         }
         return nil
+    }
+
+    // MARK: Antigravity
+
+    static func parseAntigravity(_ line: Data, state: inout AgentLogState, now: Date) -> [AgentLogEntry] {
+        AntigravityReader().parse(line, state: &state, now: now)
     }
 
     static func copilotEvent(_ type: String) -> Bool {

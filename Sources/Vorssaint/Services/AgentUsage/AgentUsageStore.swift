@@ -396,7 +396,9 @@ final class AgentUsageStore {
     func reprice() {
         summary.invalidate()
         for position in records.indices {
-            guard !records[position].reportedCost else { continue }
+            // Older Antigravity responses carry no tokens, so their cost stays unavailable.
+            guard !records[position].reportedCost,
+                  records[position].provider != .antigravity || billables[position].tokens.total > 0 else { continue }
             let billable = billables[position]
             let date = billable.hasEventTimestamp ? records[position].date : nil
             let priced = AgentPricing.cost(billable, model: records[position].model, at: date)
@@ -422,6 +424,13 @@ final class AgentUsageStore {
 
     func clearLimits(_ provider: AgentProvider) {
         limits[provider] = nil
+    }
+
+    /// What every provider cost from `day` on, for the daily budget. A cost
+    /// that is not known, as for Antigravity responses without tokens,
+    /// counts as nothing.
+    func spent(since day: Date) -> Double {
+        records.lazy.filter { $0.date >= day }.reduce(0.0) { $0 + ($1.cost ?? 0) }
     }
 
     /// A turn that has written nothing for this long is not being worked on:
@@ -641,7 +650,9 @@ struct AgentLogRoot: Equatable {
         } : []
         return claude + [(AgentProvider.codex, ".codex/sessions"), (.codex, ".codex/archived_sessions"),
          (.opencode, ".local/share/opencode"), (.copilot, ".copilot/session-state"),
-         (.cursor, ".cursor/projects")].compactMap { provider, path in
+         (.cursor, ".cursor/projects"),
+         (.antigravity, ".gemini/antigravity/brain"), (.antigravity, ".gemini/antigravity-ide/brain"),
+         (.antigravity, ".gemini/antigravity-cli/brain")].compactMap { provider, path in
             guard providers.contains(provider) else { return nil }
             return AgentLogRoot(provider: provider, url: canonical(home.appending(path: path, directoryHint: .isDirectory)))
         }
@@ -675,6 +686,10 @@ struct AgentLogRoot: Equatable {
             guard (3...4).contains(parts.count), !parts[0].isEmpty, !parts[0].hasPrefix("."),
                   parts[1] == "agent-transcripts", !parts[2].isEmpty, !parts[2].hasPrefix(".") else { return false }
             return parts.count == 3 || parts[3] == parts[2] + ".jsonl"
+        }
+        if provider == .antigravity {
+            return parts.count == 4 && !parts[0].isEmpty && !parts[0].hasPrefix(".")
+                && parts[1...] == [".system_generated", "logs", "transcript.jsonl"]
         }
         return true
     }
@@ -783,6 +798,7 @@ final class AgentLogCursor {
     let parent: String?
     /// Replies still being written and the rows read last, for a database.
     var openCode = AgentOpenCodeProgress()
+    let session: String
     var offset: UInt64 = 0
     var identity: UInt64 = 0
     var pending = Data()
@@ -805,12 +821,17 @@ final class AgentLogCursor {
     private var codexParentLog: String?
     private var codexParentSearch = -1
 
-    init(path: String, provider: AgentProvider, cursorRoot: URL? = nil) {
+    /// `roots` are the folders being read; only an Antigravity log needs
+    /// them, to find its conversation, and resolves them itself without.
+    init(path: String, provider: AgentProvider, cursorRoot: URL? = nil, roots: [AgentLogRoot]? = nil) {
         self.path = path
         self.provider = provider
         cursorAccess = provider == .cursor ? cursorRoot.map { CursorTranscriptAccess(root: $0) } : nil
         let parent = provider == .claude ? AgentLogCursor.parent(of: path) : nil
         self.parent = parent
+        let session = AgentLogCursor.session(of: path, provider: provider, roots: roots)
+        self.session = session
+        state.session = session
         if provider == .cursor { CursorReader.adopt(path: path, into: &state) }
     }
 
@@ -847,6 +868,28 @@ final class AgentLogCursor {
         return true
     }
 
+    static func session(of path: String, provider: AgentProvider, roots: [AgentLogRoot]? = nil) -> String {
+        guard provider == .antigravity else { return "" }
+        if let root = (roots ?? AgentLogRoot.all()).first(where: { $0.provider == .antigravity && path.hasPrefix($0.url.path + "/") }) {
+            let relative = String(path.dropFirst(root.url.path.count + 1))
+            if let first = relative.split(separator: "/").first, !first.isEmpty {
+                return String(first)
+            }
+        }
+        let parts = path.split(separator: "/")
+        if let brainIndex = parts.firstIndex(of: "brain"), brainIndex + 1 < parts.count {
+            return String(parts[brainIndex + 1])
+        }
+        if parts.count >= 2, (path as NSString).lastPathComponent == "transcript.jsonl" {
+            if let sgIndex = parts.firstIndex(of: ".system_generated"), sgIndex > 0 {
+                return String(parts[sgIndex - 1])
+            }
+            return String(parts[parts.count - 2])
+        }
+        // Keep distinct non-standard paths from colliding on empty session IDs.
+        return path
+    }
+
     /// Where reading stopped, at a line boundary: a line still being written
     /// is read again whole from the file.
     struct Saved: Equatable {
@@ -880,7 +923,7 @@ final class AgentLogCursor {
         offset = 0
         pending = Data()
         discarding = false
-        state = AgentLogState()
+        state = AgentLogState(session: session)
         cursorPromptFingerprint = nil
         cursorPrefix = CursorTranscriptPrefix()
         cachedCoverage = nil
@@ -1071,6 +1114,14 @@ enum AgentLogReader {
             changed = true
         }
         return changed || previous.cursorLastActivity != cursor.state.cursorLastActivity
+    }
+
+    static func isLog(_ path: String, in root: AgentLogRoot) -> Bool {
+        guard isLog(path), path.hasPrefix(root.url.path + "/") else { return false }
+        guard root.provider == .antigravity else { return true }
+        // Only <conversation>/.system_generated/logs/transcript.jsonl, by
+        // the same rule discovery and file events use.
+        return root.accepts(path)
     }
 
     /// A hash of the log's first and last few kilobytes before `offset`, and

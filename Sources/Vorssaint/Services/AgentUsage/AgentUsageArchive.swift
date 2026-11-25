@@ -386,6 +386,7 @@ enum AgentUsageArchive {
                     writer.optional(gap.undatedThrough) { $0.date($1) }
                 }
             }
+            bool(value.namedWorkspace)
         }
     }
 
@@ -581,6 +582,7 @@ enum AgentUsageArchive {
                 }) else { throw Malformed() }
                 value.restoreUnmeteredResponses(responses)
             }
+            value.namedWorkspace = try bool()
             return value
         }
     }

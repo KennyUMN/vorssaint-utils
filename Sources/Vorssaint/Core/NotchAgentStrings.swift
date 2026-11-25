@@ -24,6 +24,9 @@ struct NotchAgentStrings {
     let claudeLimitsHint: String
     let waitingForLimits: String
     let noSession: String
+    let noResponsesToday: String
+    let responseFormat: String
+    let responsesFormat: String
     let apiValue: String
     let tokensFormat: String
     let cachedFormat: String
@@ -102,6 +105,7 @@ struct NotchAgentStrings {
     let resetsCheckFailed: String
     let resetsHelp: String
 
+    func responses(_ count: Int) -> String { String(format: count == 1 ? responseFormat : responsesFormat, count) }
     func tokens(_ count: String) -> String { String(format: tokensFormat, count) }
     func cached(_ share: String) -> String { String(format: cachedFormat, share) }
     func written(_ count: String) -> String { String(format: writtenFormat, count) }
@@ -212,6 +216,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Set up plan limits…",
         waitingForLimits: "Limits appear after the next reply",
         noSession: "No session running",
+        noResponsesToday: "No responses today",
+        responseFormat: "%d response",
+        responsesFormat: "%d responses",
         apiValue: "API value",
         tokensFormat: "%@ tokens",
         cachedFormat: "%@ from cache",
@@ -311,6 +318,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Налаштувати ліміти плану…",
         waitingForLimits: "Ліміти з’являться після наступної відповіді",
         noSession: "Немає активного сеансу",
+        noResponsesToday: "Сьогодні відповідей немає",
+        responseFormat: "Відповідей: %d",
+        responsesFormat: "Відповідей: %d",
         apiValue: "вартість API",
         tokensFormat: "Токенів: %@",
         cachedFormat: "Із кешу: %@",
@@ -410,6 +420,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Configurar limites do plano…",
         waitingForLimits: "Os limites aparecem após a próxima resposta",
         noSession: "Nenhuma sessão em andamento",
+        noResponsesToday: "Nenhuma resposta hoje",
+        responseFormat: "%d resposta",
+        responsesFormat: "%d respostas",
         apiValue: "valor de API",
         tokensFormat: "%@ tokens",
         cachedFormat: "%@ do cache",
@@ -509,6 +522,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Configurar límites del plan…",
         waitingForLimits: "Los límites aparecen tras la próxima respuesta",
         noSession: "Ninguna sesión en curso",
+        noResponsesToday: "Ninguna respuesta hoy",
+        responseFormat: "%d respuesta",
+        responsesFormat: "%d respuestas",
         apiValue: "valor de API",
         tokensFormat: "%@ tokens",
         cachedFormat: "%@ desde la caché",
@@ -608,6 +624,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Nastaviť limity plánu…",
         waitingForLimits: "Limity sa zobrazia po ďalšej odpovedi",
         noSession: "Nebeží žiadna relácia",
+        noResponsesToday: "Dnes žiadne odpovede",
+        responseFormat: "Odpovede: %d",
+        responsesFormat: "Odpovede: %d",
         apiValue: "hodnota API",
         tokensFormat: "Tokeny: %@",
         cachedFormat: "%@ z vyrovnávacej pamäte",
@@ -707,6 +726,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Planlimits einrichten…",
         waitingForLimits: "Limits erscheinen nach der nächsten Antwort",
         noSession: "Keine laufende Sitzung",
+        noResponsesToday: "Heute keine Antworten",
+        responseFormat: "%d Antwort",
+        responsesFormat: "%d Antworten",
         apiValue: "API-Wert",
         tokensFormat: "%@ Tokens",
         cachedFormat: "%@ aus dem Cache",
@@ -806,6 +828,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Configurer les limites du forfait…",
         waitingForLimits: "Les limites apparaissent après la prochaine réponse",
         noSession: "Aucune session en cours",
+        noResponsesToday: "Aucune réponse aujourd’hui",
+        responseFormat: "%d réponse",
+        responsesFormat: "%d réponses",
         apiValue: "valeur API",
         tokensFormat: "%@ jetons",
         cachedFormat: "%@ depuis le cache",
@@ -905,6 +930,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Configura i limiti del piano…",
         waitingForLimits: "I limiti compaiono dopo la prossima risposta",
         noSession: "Nessuna sessione in corso",
+        noResponsesToday: "Nessuna risposta oggi",
+        responseFormat: "%d risposta",
+        responsesFormat: "%d risposte",
         apiValue: "valore API",
         tokensFormat: "%@ token",
         cachedFormat: "%@ dalla cache",
@@ -1004,6 +1032,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Настроить лимиты тарифа…",
         waitingForLimits: "Лимиты появятся после следующего ответа",
         noSession: "Нет активной сессии",
+        noResponsesToday: "Сегодня ответов нет",
+        responseFormat: "Ответов: %d",
+        responsesFormat: "Ответов: %d",
         apiValue: "стоимость по API",
         tokensFormat: "Токенов: %@",
         cachedFormat: "Из кэша: %@",
@@ -1103,6 +1134,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "Plan sınırlarını ayarla…",
         waitingForLimits: "Sınırlar bir sonraki yanıttan sonra görünür",
         noSession: "Süren oturum yok",
+        noResponsesToday: "Bugün yanıt yok",
+        responseFormat: "%d yanıt",
+        responsesFormat: "%d yanıt",
         apiValue: "API değeri",
         tokensFormat: "%@ token",
         cachedFormat: "Önbellekten %@",
@@ -1202,6 +1236,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "プラン上限を設定…",
         waitingForLimits: "次の応答のあとに上限が表示されます",
         noSession: "実行中のセッションはありません",
+        noResponsesToday: "今日の応答はありません",
+        responseFormat: "%d件の応答",
+        responsesFormat: "%d件の応答",
         apiValue: "API換算額",
         tokensFormat: "%@トークン",
         cachedFormat: "キャッシュ %@",
@@ -1301,6 +1338,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "플랜 한도 설정…",
         waitingForLimits: "다음 응답 후에 한도가 표시됩니다",
         noSession: "진행 중인 세션 없음",
+        noResponsesToday: "오늘 응답 없음",
+        responseFormat: "응답 %d개",
+        responsesFormat: "응답 %d개",
         apiValue: "API 환산 금액",
         tokensFormat: "토큰 %@개",
         cachedFormat: "캐시 %@",
@@ -1400,6 +1440,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "设置套餐额度…",
         waitingForLimits: "下次回复后显示额度",
         noSession: "没有进行中的会话",
+        noResponsesToday: "今天没有响应",
+        responseFormat: "%d 次响应",
+        responsesFormat: "%d 次响应",
         apiValue: "API 价值",
         tokensFormat: "%@ 个令牌",
         cachedFormat: "缓存 %@",
@@ -1499,6 +1542,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "設定方案額度…",
         waitingForLimits: "下次回覆後會顯示額度",
         noSession: "沒有進行中的工作階段",
+        noResponsesToday: "今天沒有回應",
+        responseFormat: "%d 次回應",
+        responsesFormat: "%d 次回應",
         apiValue: "API 價值",
         tokensFormat: "%@ 個 Token",
         cachedFormat: "快取 %@",
@@ -1598,6 +1644,9 @@ extension NotchAgentStrings {
         claudeLimitsHint: "設定計劃額度…",
         waitingForLimits: "下次回覆後會顯示額度",
         noSession: "沒有進行中的工作階段",
+        noResponsesToday: "今日沒有回應",
+        responseFormat: "%d 次回應",
+        responsesFormat: "%d 次回應",
         apiValue: "API 價值",
         tokensFormat: "%@ 個 Token",
         cachedFormat: "快取 %@",

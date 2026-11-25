@@ -345,7 +345,7 @@ enum AgentUsageArchiveTests {
             ("AgentLiveSession", labels(sampleTurn),
              ["id", "provider", "started", "lastActivity", "model", "project", "tokens", "cost"]),
             ("AgentLogCursor", labels(cursor),
-             ["path", "provider", "cursorAccess", "parent", "openCode", "offset", "identity", "pending", "discarding",
+             ["path", "provider", "cursorAccess", "parent", "openCode", "session", "offset", "identity", "pending", "discarding",
               "state", "cursorPromptFingerprint", "cursorPrefix", "coverageStore", "cachedCoverage", "needsUsageReplay",
               "modified", "restarted", "codexParentLog", "codexParentSearch", "fingerprinted"]),
             ("AgentLogCursor.Saved", labels(cursor.saved),
@@ -357,7 +357,7 @@ enum AgentUsageArchiveTests {
               "copilotTotals", "copilotRequests", "copilotRequestModels", "copilotReportedRequests",
               "copilotTurnID", "copilotFinalResponse", "cursorPromptCount", "cursorPromptTimestamp", "cursorLastActivity",
               "cursorUnmeteredMinutes", "cursorUnmeteredModelMinutes", "cursorUndatedResponseThrough",
-              "cursorUnmeteredResponses", "cursorEarliestUnmeteredResponse",
+              "cursorUnmeteredResponses", "cursorEarliestUnmeteredResponse", "namedWorkspace",
               "parentSession", "openCodeSessions", "runningCommands"])
         ]
         for layout in layouts {
